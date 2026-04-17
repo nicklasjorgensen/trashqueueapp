@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'leaderboard_page.dart';
 import 'profile_page.dart';
+import 'info_page.dart';
+import 'shop_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -36,9 +38,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   // 2. Liste over de sider, menuen skal vise
   static const List<Widget> _pages = <Widget>[
-    Center(child: Text('Hjemmeside', style: TextStyle(fontSize: 24))),
+    ShopPage(),
     LeaderboardPage(),
     ProfilePage(),
+    InfoPage(),
   ];
 
   // 3. Funktion der opdaterer index, når man trykker på menuen
@@ -73,6 +76,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
+            label: 'Info',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepPurple,
@@ -81,19 +88,4 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 }
-  class Leaderboard extends StatelessWidget {
-    const Leaderboard({super.key});
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Leaderboard'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        ),
-        body: const Center(
-          child: Text('Leaderboard Page', style: TextStyle(fontSize: 24)),
-        ),
-      );
-    }
-}

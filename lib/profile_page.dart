@@ -97,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              labelText: 'Indtast cardID',
+              labelText: 'Indtast cardID præcis som det står på dit kort',
               prefixIcon: Icon(Icons.badge),
             ),
             onChanged: (val) => setState(() => _hasID = val.isNotEmpty),
@@ -105,12 +105,12 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: _saveID,
-            child: const Text("Gem ID lokalt"),
+            child: const Text("Gem ID"),
           ),
           
           const Divider(height: 40),
 
-          const Text("Trin 2: Skift Navn", 
+          const Text("Trin 2: Indtast navn", 
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           
