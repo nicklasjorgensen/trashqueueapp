@@ -1,0 +1,17 @@
+image: ghcr.io/cirruslabs/flutter:stable
+
+pages:
+  stage: deploy
+  script:
+    # 1. Hent pakker (som http og shared_preferences)
+    - flutter pub get
+    # 2. Byg web-versionen. 
+    # VIGTIGT: Erstat 'dit-projekt-navn' med navnet på dit GitLab repository
+    - flutter build web --base-href "/dit-projekt-navn/"
+    # 3. GitLab Pages forventer at filerne ligger i en mappe der hedder 'public'
+    - cp -r build/web public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main  # Eller 'master', afhængigt af hvad din hoved-gren hedder
