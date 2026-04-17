@@ -21,10 +21,6 @@ class InfoPage extends StatelessWidget {
         'Du kan bruge dine point i butikken til at købe forskellige tjenester, som f.eks. at spille en bestemt sang\n\n'
         '\n\n'
         'Lige nu optjener du 1 point for hver flaske du panter\n\n'
-        '\n\n'
-        '\n\n'
-        'Hvis du har spørgsmål eller brug for hjælp, så tøv ikke med at kontakte os!\n\n'
-        'Du kan finde os i chomsky eller spørge efter Jens på åboulevarden\n\n'
         ,
         textAlign: TextAlign.left,
         style: TextStyle(fontSize: 14),
