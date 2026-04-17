@@ -81,6 +81,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: 'Info',
           ),
         ],
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepPurple,
         onTap: _onItemTapped, // Kalder funktionen når man trykker
