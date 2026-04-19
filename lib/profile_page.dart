@@ -21,7 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadData();
   }
 
-  // Henter gemt ID og tjekker om navnefeltet skal låses op
+  // Henter id
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -32,7 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  // Gemmer kun ID lokalt
+  // Gemmer id lokalt
   Future<void> _saveID() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id', _idController.text);
@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Sender POST request til serveren for at ændre navn
+  // POST for at ændre navn på backend
   Future<void> _changeNameOnServer() async {
     if (_nameController.text.isEmpty) return;
 
