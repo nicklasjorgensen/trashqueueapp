@@ -4,6 +4,7 @@ import 'leaderboard_page.dart';
 import 'profile_page.dart';
 import 'info_page.dart';
 import 'shop_page.dart';
+import 'music_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +40,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   // 2. Liste over de sider, menuen skal vise
   static const List<Widget> _pages = <Widget>[
     ShopPage(),
+    MusicPage(),
     LeaderboardPage(),
     ProfilePage(),
     InfoPage(),
@@ -67,6 +69,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.add_shopping_cart),
             label: 'My Shop',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.music_note),
+            label: 'Music',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.addchart),
