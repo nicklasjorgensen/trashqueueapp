@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -15,6 +16,10 @@ class _ShopPageState extends State<ShopPage> {
   String _userName = "Henter...";
   int _points = 0;
   bool _isLoading = true;
+  List _searchResults = [];
+  bool _showSearch = false; // Styrer om søgefeltet vises (efter køb)
+  Timer? _debounce;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -92,6 +97,10 @@ class _ShopPageState extends State<ShopPage> {
         {
             http.post(Uri.parse('https://au795615.eu.pythonanywhere.com/spotify_skip'));
           }
+        if (endpoint == ('song_purchase'))
+        {
+          setState(() => _showSearch = true);
+        }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Ikke nok point eller fejl på serveren'), backgroundColor: Colors.red),
@@ -192,33 +201,114 @@ class _ShopPageState extends State<ShopPage> {
 
         // --- SHOP INDHOLD ---
         Expanded(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.deepPurple),
-                const SizedBox(height: 30),
-                
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.music_note),
-                  label: const Text('Vælg sang (1 point)'),
-                  onPressed: () => _confirmPurchase(context, 'Vælg sang', 1, 'song_purchase'),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(260, 55)),
-                ),
-                
-                const SizedBox(height: 20),
-                
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.skip_next),
-                  label: const Text('Skip sang (2 point)'),
-                  onPressed: () => _confirmPurchase(context, 'Skip sang', 2, 'skip_purchase'),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(260, 55)),
-                ),
-              ],
-            ),
-          ),
+          child: _showSearch 
+          ? _buildSearchUI()
+          : _buildActionButtons()
         ),
       ],
     );
   }
+
+  Future<void> _onSearchChanged(String query) async {
+  if (_debounce?.isActive ?? false) _debounce!.cancel();
+  _debounce = Timer(const Duration(milliseconds: 500), () async {
+    if (query.isEmpty) {
+      setState(() => _searchResults = []);
+      return;
+    }
+
+    final url = Uri.parse('https://au795615.eu.pythonanywhere.com/spotify_search');
+    final response = await http.post(url, body: {'search': query});
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _searchResults = data['tracks']['items'];
+      });
+    }
+  });
+}
+
+Future<void> _queueSelectedSong(String uri) async {
+  final url = Uri.parse('https://au795615.eu.pythonanywhere.com/spotify_playback');
+  final response = await http.post(url, body: {
+    'track-uri': uri,
+    'cardID': _cardID,
+  });
+
+  if (response.statusCode == 200) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sang tilføjet til køen!'), backgroundColor: Colors.green)
+    );
+    setState(() {
+      _showSearch = false; // Skjul søgning igen efter valg
+      _searchController.clear();
+      _searchResults = [];
+    });
+  }
+}
+
+Widget _buildSearchUI() {
+  return Column(
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextField(
+          controller: _searchController,
+          onChanged: _onSearchChanged,
+          decoration: InputDecoration(
+            labelText: 'Søg efter sang...',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() => _showSearch = false),
+            ),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+      ),
+      Expanded(
+        child: ListView.builder(
+          itemCount: _searchResults.length,
+          itemBuilder: (context, index) {
+            final track = _searchResults[index];
+            return ListTile(
+              leading: Image.network(track['album']['images'].last['url']),
+              title: Text(track['name']),
+              subtitle: Text(track['artists'][0]['name']),
+              trailing: const Icon(Icons.add_circle_outline),
+              onTap: () => _queueSelectedSong(track['uri']),
+            );
+          },
+        ),
+      ),
+    ],
+  );
+}
+
+// Flyt dine gamle knapper ned i denne widget
+Widget _buildActionButtons() {
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.deepPurple),
+        const SizedBox(height: 30),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.queue_music),
+          label: const Text('Queue en sang (1 point)'),
+          onPressed: () => _confirmPurchase(context, 'Queue en sang', 1, 'song_purchase'),
+          style: ElevatedButton.styleFrom(minimumSize: const Size(260, 55)),
+        ),
+        const SizedBox(height: 30),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.skip_next),
+          label: const Text('Skip sang (2 point)'),
+          onPressed: () => _confirmPurchase(context, 'Skip sang', 2, 'skip_purchase'),
+          style: ElevatedButton.styleFrom(minimumSize: const Size(260, 55))),
+        
+      ],
+    ),
+  );
+}
 }
