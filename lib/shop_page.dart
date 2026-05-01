@@ -234,7 +234,7 @@ class _ShopPageState extends State<ShopPage> {
       });
     }
   });
-}
+} 
 
 Future<void> _queueSelectedSong(String uri) async {
   final url = Uri.parse('https://au795615.eu.pythonanywhere.com/spotify_playback');

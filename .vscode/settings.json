@@ -1,4 +1,5 @@
 {
     "dart.flutterSdkPath": "~/Desktop/ITPDP/Flutter/flutter",
-    "cmake.sourceDirectory": "C:/Users/Nicklas/Desktop/ITPDP/trashqueue/trash_queue_test/windows"
+    "cmake.sourceDirectory": "C:/Users/Nicklas/Desktop/ITPDP/trashqueue/trash_queue_test/windows",
+    "cmake.ignoreCMakeListsMissing": true
 }
