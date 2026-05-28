@@ -72,7 +72,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               return ListTile(
                 leading: Text("${index + 1}."),
                 title: Text(playerName),
-                trailing: Text("$points pts"),
+                trailing: Text("$points deposits"),
                 onTap: () {
                   Navigator.push(
                     context,

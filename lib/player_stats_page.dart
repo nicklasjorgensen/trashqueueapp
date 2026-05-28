@@ -38,7 +38,15 @@ class _PlayerStatsPageState extends State<PlayerStatsPage> {
         'stats': statsData['stats'], 
         'drinks': drinksList,        
       };
-    } else {
+    }
+    else if (statsResponse.statusCode == 200 && drinksResponse.statusCode == 404) {
+      final statsData = jsonDecode(statsResponse.body);
+      return {
+        'stats': statsData['stats'], 
+        'drinks': [], // Hvis der ikke er drink-data, returnerer vi en tom liste
+      };
+    }
+    else {
       throw Exception('Kunne ikke hente spiller- eller drinkdata');
     }
   }

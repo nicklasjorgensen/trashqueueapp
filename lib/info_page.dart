@@ -20,7 +20,7 @@ class InfoPage extends StatelessWidget {
         'Du vil derefter kunne se dine point blive opdateret i appen!\n\n'
         'Du kan bruge dine point i butikken til at købe forskellige tjenester, som f.eks. at spille en bestemt sang\n\n'
         '\n\n'
-        'Lige nu optjener du 1 point for hver flaske du panter\n\n'
+        'Lige nu optjener du 3 point for hver flaske du panter\n\n'
         ,
         textAlign: TextAlign.left,
         style: TextStyle(fontSize: 14),
