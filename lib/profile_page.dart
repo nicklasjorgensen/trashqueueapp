@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:nfc_manager/nfc_manager.dart';
+import 'package:web/web.dart' as web; // Det nye officielle web-bibliotek
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -23,18 +23,81 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadData();
   }
 
-  // Henter id lokalt fra SharedPreferences
+  // Henter id lokalt, eller tjekker om appen blev åbnet via et NFC-link
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      String? savedID = prefs.getString('user_id');
-      _idController.text = savedID ?? '';
-      _hasID = _idController.text.isNotEmpty;
-      _isLoading = false;
-    });
+    
+    // 1. Tjek først om der ligger et gemt ID i forvejen
+    String? savedID = prefs.getString('user_id');
+
+    // 2. Hent den aktuelle URL direkte fra browserens vindue via package:web
+    final String nuvaerendeUrl = web.window.location.href;
+    final uri = Uri.parse(nuvaerendeUrl);
+    final String? uidFraNFC = uri.queryParameters['uid'];
+
+    if (uidFraNFC != null && uidFraNFC.isNotEmpty) {
+      // Hvis der kom et UID med fra NFC-linket (?uid=04a1b2c3), henter vi ID fra din server
+      await _fetchIdFromServer(uidFraNFC);
+    } else {
+      // Hvis ikke der er scannet et tag, indlæser vi bare det gamle ID (hvis det findes)
+      setState(() {
+        _idController.text = savedID ?? '';
+        _hasID = _idController.text.isNotEmpty;
+        _isLoading = false;
+      });
+    }
   }
 
-  // Gemmer id lokalt
+  // Funktion der kalder din PythonAnywhere server og finder ID ud fra tagget
+  Future<void> _fetchIdFromServer(String uidHex) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://au795615.eu.pythonanywhere.com/get_ring_id/$uidHex'),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        
+        if (jsonResponse.containsKey('ID') && jsonResponse['ID'] != null) {
+          final fetchedId = jsonResponse['ID'].toString();
+          
+          // Opdater tekstfeltet i appen
+          setState(() {
+            _idController.text = fetchedId;
+            _hasID = true;
+          });
+          
+          // Gem det med det samme i SharedPreferences, så enheden husker det fremover
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('user_id', fetchedId);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('NFC Tag registreret! Dit ID er sat til: $fetchedId')),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Kunne ikke finde ID på serveren (${response.statusCode})')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Netværksfejl verifikation: $e')),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Gemmer id manuelt (hvis brugeren taster det ind i stedet)
   Future<void> _saveID() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id', _idController.text);
@@ -46,99 +109,6 @@ class _ProfilePageState extends State<ProfilePage> {
         const SnackBar(content: Text('ID gemt lokalt!')),
       );
     }
-  }
-
-  // Starter NFC scanning og henter ID fra serveren via UID
-  Future<void> _startNFCScan() async {
-    bool isAvailable = await NfcManager.instance.isAvailable();
-    if (!isAvailable) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('NFC er ikke tilgængeligt på denne enhed.')),
-        );
-      }
-      return;
-    }
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Klar... Hold dit tag op til bagsiden af telefonen.')),
-      );
-    }
-
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      // Stop sessionen med det samme vi har fundet et tag
-      NfcManager.instance.stopSession();
-
-      final data = tag.data;
-      List<int>? identifier;
-      
-      // Udtrækker UID afhængigt af tech-typen på chippen
-      if (data.containsKey('nfca')) identifier = data['nfca']['identifier'];
-      else if (data.containsKey('nfcb')) identifier = data['nfcb']['identifier'];
-      else if (data.containsKey('nfcf')) identifier = data['nfcf']['identifier'];
-      else if (data.containsKey('nfcv')) identifier = data['nfcv']['identifier'];
-      else if (data.containsKey('mifare')) identifier = data['mifare']['identifier'];
-
-      if (identifier == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Kunne ikke læse NFC-taggets UID.')),
-          );
-        }
-        return;
-      }
-
-      // Konverter byte-array til en Hex String (f.eks. [4, 161, 178, 195] -> "04a1b2c3")
-      String uidHex = identifier.map((e) => e.toRadixString(16).padLeft(2, '0')).join('');
-
-      try {
-        final response = await http.get(
-          Uri.parse('https://au795615.eu.pythonanywhere.com/get_ring_id/$uidHex'),
-        );
-
-        if (response.statusCode == 200) {
-          // De-serialiserer JSON-respons til et Map (Dictionary)
-          final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-          
-          if (jsonResponse.containsKey('ID') && jsonResponse['ID'] != null) {
-            final fetchedId = jsonResponse['ID'].toString();
-            
-            setState(() {
-              _idController.text = fetchedId;
-              _hasID = true;
-            });
-            
-            // Gemmer det automatisk lokalt, så appen husker det næste gang
-            await _saveID(); 
-
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('ID fundet og gemt: $fetchedId')),
-              );
-            }
-          } else {
-             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Kunne ikke finde "ID" i serverens svar.')),
-              );
-            }
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Fejl fra server (${response.statusCode}): ${response.body}')),
-            );
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Netværksfejl: $e')),
-          );
-        }
-      }
-    });
   }
 
   // POST for at ændre navn på backend
@@ -192,36 +162,15 @@ class _ProfilePageState extends State<ProfilePage> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              labelText: 'Indtast cardID præcis som det står på dit kort',
+              labelText: 'Indtast cardID eller scan dit NFC tag for at udfylde',
               prefixIcon: Icon(Icons.badge),
             ),
             onChanged: (val) => setState(() => _hasID = val.isNotEmpty),
           ),
           const SizedBox(height: 10),
-          
-          // Knapper til NFC-skan og manuel lagring sat pænt op i en Row
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: ElevatedButton.icon(
-                  onPressed: _startNFCScan,
-                  icon: const Icon(Icons.nfc),
-                  label: const Text("Skan Tag"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade100,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 1,
-                child: ElevatedButton(
-                  onPressed: _saveID,
-                  child: const Text("Gem"),
-                ),
-              ),
-            ],
+          ElevatedButton(
+            onPressed: _saveID,
+            child: const Text("Gem ID manuelt"),
           ),
           
           const Divider(height: 40),
@@ -235,7 +184,7 @@ class _ProfilePageState extends State<ProfilePage> {
             enabled: _hasID, 
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              labelText: _hasID ? 'Nyt navn' : 'Indtast ID først for at skifte navn',
+              labelText: _hasID ? 'Nyt navn' : 'Indtast/scan ID først for at skifte navn',
               prefixIcon: Icon(Icons.person, color: _hasID ? Colors.blue : Colors.grey),
               filled: !_hasID,
               fillColor: Colors.grey.shade200,
