@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:web/web.dart' as web; // Det nye officielle web-bibliotek
+import 'package:web/web.dart' as web; 
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -97,20 +97,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Gemmer id manuelt (hvis brugeren taster det ind i stedet)
-  Future<void> _saveID() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_id', _idController.text);
-    setState(() {
-      _hasID = _idController.text.isNotEmpty;
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ID gemt lokalt!')),
-      );
-    }
-  }
-
   // POST for at ændre navn på backend
   Future<void> _changeNameOnServer() async {
     if (_nameController.text.isEmpty) return;
@@ -154,28 +140,25 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Trin 1: Indstil dit ID", 
+          const Text("Dit ID", 
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
+          
           TextField(
             controller: _idController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Indtast cardID eller scan dit NFC tag for at udfylde',
-              prefixIcon: Icon(Icons.badge),
+            readOnly: true, // Gør at brugeren ikke kan ændre teksten
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: _hasID ? 'Dit tilknyttede ID' : 'Scan ring for at logge ind',
+              prefixIcon: const Icon(Icons.badge),
+              filled: true,
+              fillColor: Colors.grey.shade200, // Giver det et låst udseende
             ),
-            onChanged: (val) => setState(() => _hasID = val.isNotEmpty),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: _saveID,
-            child: const Text("Gem ID manuelt"),
           ),
           
           const Divider(height: 40),
 
-          const Text("Trin 2: Indtast navn", 
+          const Text("Indstil navn", 
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           
@@ -184,7 +167,7 @@ class _ProfilePageState extends State<ProfilePage> {
             enabled: _hasID, 
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              labelText: _hasID ? 'Nyt navn' : 'Indtast/scan ID først for at skifte navn',
+              labelText: _hasID ? 'Nyt navn' : 'Scan ring først for at kunne skifte navn',
               prefixIcon: Icon(Icons.person, color: _hasID ? Colors.blue : Colors.grey),
               filled: !_hasID,
               fillColor: Colors.grey.shade200,
