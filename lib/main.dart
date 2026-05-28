@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web/web.dart' as web; // Husk at importere web-pakken til URL-tjekket
 
 import 'leaderboard_page.dart';
 import 'profile_page.dart';
@@ -35,18 +36,37 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  // 1. Holder styr på hvilket index der er valgt
+  // 1. Holder styr på hvilket index der er valgt. Starter som standard på 0 (Shop)
   int _selectedIndex = 0;
 
-  // 2. Liste over de sider, menuen skal vise
   static const List<Widget> _pages = <Widget>[
-    ShopPage(),
-    MusicPage(),
+    ShopPage(),    
+    MusicPage(), 
     LeaderboardPage(),
-    ProfilePage(),
+    ProfilePage(),     
     InfoPage(),
     CoinFlipPage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tjekForNfcScan(); // Tjekker URL'en så snart appen åbner
+  }
+
+  // Ny funktion der tjekker for ?uid= i URL'en
+  void _tjekForNfcScan() {
+    final String nuvaerendeUrl = web.window.location.href;
+    final uri = Uri.parse(nuvaerendeUrl);
+
+    // Hvis appen blev åbnet via et NFC-tag...
+    if (uri.queryParameters.containsKey('uid')) {
+      setState(() {
+        // ... så skifter vi automatisk fanen til ProfilePage (index 3)
+        _selectedIndex = 3;
+      });
+    }
+  }
 
   // 3. Funktion der opdaterer index, når man trykker på menuen
   void _onItemTapped(int index) {
@@ -81,8 +101,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: 'Leaderboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.info),
@@ -101,4 +121,3 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 }
-
