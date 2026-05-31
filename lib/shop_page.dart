@@ -103,11 +103,6 @@ class _ShopPageState extends State<ShopPage> {
           whichBuy = 'song_purchase';
           setState(() => _showSearch = true);
         }
-        if (endpoint == ('play_now'))
-        {
-          whichBuy = 'play_now';
-          setState(() => _showSearch = true);
-        }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Ikke nok point eller fejl på serveren'), backgroundColor: Colors.red),
@@ -255,25 +250,6 @@ Future<void> _queueSelectedSong(String uri) async {
   }
 }
 
-Future<void> _playSelectedSong(String uri) async {
-  final url = Uri.parse('https://au795615.eu.pythonanywhere.com/spotify_playnow');
-  final response = await http.post(url, body: {
-    'track-uri': uri,
-    'cardID': _cardID,
-  });
-
-  if (response.statusCode == 200) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sang Afspilles nu!'), backgroundColor: Colors.green)
-    );
-    setState(() {
-      _showSearch = false; 
-      _searchController.clear();
-      _searchResults = [];
-    });
-  }
-}
-
 Widget _buildSearchUI() {
   return Column(
     children: [
@@ -307,15 +283,6 @@ Widget _buildSearchUI() {
                 onTap: () => _queueSelectedSong(track['uri']),
                 );
             }
-            if(whichBuy == 'play_now') {
-              return ListTile(
-                leading: Image.network(track['album']['images'].last['url']),
-                title: Text(track['name']),
-                subtitle: Text(track['artists'][0]['name']),
-                trailing: const Icon(Icons.add_circle_outline),
-                onTap: () => _playSelectedSong(track['uri']),
-                );
-            }
           },
         ),
       ),
@@ -344,11 +311,6 @@ Widget _buildActionButtons() {
           onPressed: () => _confirmPurchase(context, 'Skip sang', 2, 'skip_purchase'),
           style: ElevatedButton.styleFrom(minimumSize: const Size(260, 55))),
         const SizedBox(height: 30),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('Afspil sang nu (3 point)'),
-          onPressed: () => _confirmPurchase(context, 'Afspil sang nu', 3, 'play_now'),
-          style: ElevatedButton.styleFrom(minimumSize: const Size(260, 55))),
       ],
     ),
   );

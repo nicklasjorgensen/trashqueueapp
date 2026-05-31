@@ -107,7 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (mounted) {
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Navn ændret på serveren!')),
+            const SnackBar(content: Text('Navn opdateret!')),
           );
           _nameController.clear();
         } else {
@@ -173,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: ElevatedButton(
               onPressed: _hasID ? _changeNameOnServer : null,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade100),
-              child: const Text("Opdater navn på server"),
+              child: const Text("Opdater navn"),
             ),
           ),
         ],
