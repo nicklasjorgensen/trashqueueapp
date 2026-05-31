@@ -70,12 +70,6 @@ class _ProfilePageState extends State<ProfilePage> {
           // Gem det med det samme i SharedPreferences, så enheden husker det fremover
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('user_id', fetchedId);
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('NFC Tag registreret! Dit ID er sat til: $fetchedId')),
-            );
-          }
         }
       } else {
         if (mounted) {
