@@ -44,7 +44,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     LeaderboardPage(),
     ProfilePage(),     
     InfoPage(),
-    CoinFlipPage(),
   ];
 
   @override
