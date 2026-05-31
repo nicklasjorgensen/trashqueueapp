@@ -6,7 +6,6 @@ import 'profile_page.dart';
 import 'info_page.dart';
 import 'shop_page.dart';
 import 'music_page.dart';
-import 'gambling_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -107,10 +106,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.info),
             label: 'Info',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.casino),
-            label: 'Gambling',
           )
         ],
         type: BottomNavigationBarType.fixed,
