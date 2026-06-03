@@ -3,7 +3,6 @@ import 'package:web/web.dart' as web; // Husk at importere web-pakken til URL-tj
 
 import 'leaderboard_page.dart';
 import 'profile_page.dart';
-import 'info_page.dart';
 import 'shop_page.dart';
 import 'music_page.dart';
 
@@ -43,7 +42,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     MusicPage(), 
     LeaderboardPage(),
     ProfilePage(),     
-    InfoPage(),
   ];
 
   @override
@@ -101,10 +99,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'Info',
           )
         ],
         type: BottomNavigationBarType.fixed,
