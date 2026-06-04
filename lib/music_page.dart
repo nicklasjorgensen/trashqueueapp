@@ -109,12 +109,11 @@ class _MusicPageState extends State<MusicPage> {
           const Text("Næste i køen", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(),
 
-          // --- QUEUE LIST ---
           ...queue.map((track) {
   // Vi henter URL'en på samme måde som ved den aktive sang
   final images = track['album']?['images'] as List<dynamic>?;
   final thumbnailUrl = (images != null && images.isNotEmpty) 
-      ? images.last['url'] // Vi bruger 'last' for at få det mindste billede (typisk 64x64) til køen
+      ? images.last['url'] 
       : null;
 
   return ListTile(

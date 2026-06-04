@@ -54,7 +54,7 @@ class _ShopPageState extends State<ShopPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         
-        // Da din Python returnerer jsonify(player=player), henter vi data her:
+        
         final player = data['player'];
 
         setState(() {

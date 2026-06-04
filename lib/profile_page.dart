@@ -91,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // POST for at ændre navn på backend
+  
   Future<void> _changeNameOnServer() async {
     if (_nameController.text.isEmpty) return;
 
@@ -140,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
           
           TextField(
             controller: _idController,
-            readOnly: true, // Gør at brugeren ikke kan ændre teksten
+            readOnly: true, 
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               labelText: _hasID ? 'Dit tilknyttede ID' : 'Scan ring for at logge ind',
