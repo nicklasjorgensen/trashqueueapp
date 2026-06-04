@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:web/web.dart' as web; // Husk at importere web-pakken til URL-tjekket
+import 'package:web/web.dart' as web;
 
 import 'leaderboard_page.dart';
 import 'profile_page.dart';
@@ -104,7 +104,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepPurple,
-        onTap: _onItemTapped, // Kalder funktionen når man trykker
+        onTap: _onItemTapped,
       ),
     );
   }
